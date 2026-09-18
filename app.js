@@ -25,10 +25,73 @@ const CONTENT = {
 
 const scenes = [...document.querySelectorAll(".scene")];
 const app = document.getElementById("app");
+const MEMORY_KEY = "irenne-tiny-world-memory-v1";
 let currentScene = "discovery";
 let annoyCount = 0;
 let wakeCount = 0;
 let audioEngine = null;
+let sessionStarted = false;
+let sessionCompleted = false;
+let tinyMemory = loadTinyMemory();
+
+function loadTinyMemory() {
+  try {
+    const saved = JSON.parse(localStorage.getItem(MEMORY_KEY));
+    return {
+      visits: Number.isFinite(saved?.visits) ? saved.visits : 0,
+      completions: Number.isFinite(saved?.completions) ? saved.completions : 0,
+      lastVisit: saved?.lastVisit || null
+    };
+  } catch (error) {
+    console.warn("Tiny world memory is unavailable:", error);
+    return { visits: 0, completions: 0, lastVisit: null };
+  }
+}
+
+function saveTinyMemory() {
+  try {
+    localStorage.setItem(MEMORY_KEY, JSON.stringify(tinyMemory));
+  } catch (error) {
+    console.warn("Tiny world could not remember this visit:", error);
+  }
+}
+
+function beginExperience() {
+  const returningVisitor = tinyMemory.visits > 0;
+  if (!sessionStarted) {
+    tinyMemory.visits += 1;
+    tinyMemory.lastVisit = new Date().toISOString();
+    saveTinyMemory();
+    sessionStarted = true;
+  }
+
+  toggleAudio(true);
+  if (!returningVisitor) {
+    goTo("scan");
+    return;
+  }
+
+  const discovery = document.querySelector('[data-scene="discovery"]');
+  const speech = discovery.querySelector(".speech");
+  const pokeButton = discovery.querySelector('[data-action="begin"]');
+  speech.innerHTML = "<p>...</p><p>you again?</p>";
+  pokeButton.disabled = true;
+  pokeButton.textContent = "caught me";
+  setTimeout(() => {
+    goTo("scan");
+    pokeButton.disabled = false;
+    pokeButton.textContent = "poke";
+  }, 1400);
+}
+
+function completeExperience() {
+  if (!sessionCompleted) {
+    tinyMemory.completions += 1;
+    saveTinyMemory();
+    sessionCompleted = true;
+  }
+  goTo("finale");
+}
 
 function fillContent() {
   document.querySelectorAll('[data-field="name"]').forEach((el) => {
@@ -91,6 +154,7 @@ function startWakeGame() {
   wakeCount = 0;
   const irenne = document.getElementById("sleepyIrenne");
   irenne.classList.remove("is-awake", "is-poked");
+  delete irenne.dataset.reaction;
   irenne.disabled = false;
   document.getElementById("wakeInstruction").textContent = "Tap her 6 times before she misses the cake.";
   document.getElementById("wakeDialogue").textContent = "five more minutes...";
@@ -101,8 +165,16 @@ function startWakeGame() {
 function wakeIrenne() {
   const irenne = document.getElementById("sleepyIrenne");
   if (irenne.disabled) return;
-  const reactions = ["mmmh...", "five more minutes...", "who is tapping me", "HEY", "I'M AWAKE—", "WAIT, THERE'S CAKE?!"];
+  const reactions = [
+    "( •ᴗ• )\noh.",
+    "( º□º )\nHEY",
+    "(╬ •̀皿•́)\npersonal space??",
+    "(╬ •̀皿•́)\npersonal space??",
+    "(╬ •̀皿•́)\npersonal space??",
+    "٩(ˊᗜˋ*)و\nWAIT, THERE'S CAKE?!"
+  ];
   wakeCount++;
+  irenne.dataset.reaction = wakeCount === 1 ? "curious" : wakeCount === 2 ? "startled" : wakeCount < 6 ? "annoyed" : "awake";
   document.querySelectorAll(".wake-progress span").forEach((dot, index) => dot.classList.toggle("is-filled", index < wakeCount));
   document.getElementById("wakeDialogue").textContent = reactions[Math.min(wakeCount - 1, reactions.length - 1)];
   irenne.classList.remove("is-poked");
@@ -111,9 +183,32 @@ function wakeIrenne() {
   if (wakeCount >= 6) {
     irenne.disabled = true;
     irenne.classList.add("is-awake");
-    document.getElementById("wakeInstruction").textContent = "Birthday girl successfully activated ✓";
-    setTimeout(() => { goTo("reveal"); burstConfetti(); }, 1100);
+    document.getElementById("wakeInstruction").textContent = "6 / 6";
+    document.getElementById("wakeDialogue").textContent = "...";
+    setTimeout(() => {
+      document.getElementById("wakeDialogue").textContent = "...\nshe's awake.";
+    }, 650);
+    setTimeout(runBirthdayReveal, 1650);
   }
+}
+
+function runBirthdayReveal() {
+  const boom = document.getElementById("revealBoom");
+  boom.classList.remove("is-boom");
+  boom.classList.add("is-flashing");
+  setTimeout(() => {
+    goTo("reveal");
+    boom.classList.add("is-boom");
+    app.classList.remove("is-impact");
+    void app.offsetWidth;
+    app.classList.add("is-impact");
+    burstConfetti();
+    audioEngine?.celebrate();
+  }, 850);
+  setTimeout(() => {
+    boom.classList.remove("is-flashing", "is-boom");
+    app.classList.remove("is-impact");
+  }, 2400);
 }
 
 function burstConfetti() {
@@ -162,6 +257,21 @@ class TinySoundtrack {
     };
     play(); this.timer = setInterval(play, 430);
   }
+  celebrate() {
+    if (!this.context || !this.master || !this.timer) return;
+    const start = this.context.currentTime;
+    [261.63, 329.63, 392, 523.25].forEach((frequency, index) => {
+      const osc = this.context.createOscillator();
+      const gain = this.context.createGain();
+      osc.type = index % 2 ? "triangle" : "sine";
+      osc.frequency.setValueAtTime(frequency, start);
+      osc.frequency.exponentialRampToValueAtTime(frequency * 1.5, start + .72);
+      gain.gain.setValueAtTime(0, start);
+      gain.gain.linearRampToValueAtTime(.75, start + .035 + index * .015);
+      gain.gain.exponentialRampToValueAtTime(.001, start + 1.2);
+      osc.connect(gain); gain.connect(this.master); osc.start(start); osc.stop(start + 1.25);
+    });
+  }
   stop() { clearInterval(this.timer); this.timer = null; }
 }
 
@@ -191,24 +301,27 @@ function annoyMascot() {
     4: "I'M SERIOUS.",
     5: "(╬ •̀皿•́)",
     10: "WHY ARE YOU LIKE THIS",
-    20: "Achievement unlocked:\n✨ Professional Annoyance ✨"
+    20: "Achievement unlocked:\n✨ Professional Annoyance ✨",
+    25: "fine.\nyou win.\nhappy birthday again."
   };
+  if (annoyCount >= 25) return;
   annoyCount++;
   const reaction = document.getElementById("annoyReaction");
   if (reactions[annoyCount]) reaction.textContent = reactions[annoyCount];
-  reaction.classList.toggle("is-achievement", annoyCount >= 20);
+  reaction.classList.toggle("is-achievement", annoyCount >= 20 && annoyCount < 25);
+  reaction.classList.toggle("is-surrender", annoyCount === 25);
   const mascot = document.getElementById("finalMascot");
-  mascot.dataset.expression = annoyCount >= 4 ? "serious" : "shock";
-  mascot.parentElement.classList.remove("shake"); void mascot.offsetWidth; mascot.parentElement.classList.add("shake");
-  if (annoyCount === 20) burstConfetti();
+  mascot.dataset.expression = annoyCount >= 25 ? "happy" : annoyCount >= 4 ? "serious" : "shock";
+  mascot.parentElement.classList.remove("shake");
+  if (annoyCount < 25) {
+    void mascot.offsetWidth;
+    mascot.parentElement.classList.add("shake");
+  }
+  if (annoyCount === 20 || annoyCount === 25) burstConfetti();
 }
 
 const actions = {
-  begin: () => {
-    // Advance first so audio restrictions can never block the experience.
-    goTo("scan");
-    toggleAudio(true);
-  },
+  begin: beginExperience,
   "scan-complete": () => goTo("warning"),
   protocol: startProtocol,
   unstick: finishProtocol,
@@ -217,12 +330,12 @@ const actions = {
   letter: () => goTo("letter"),
   "open-letter": () => goTo("message"),
   feelings: () => goTo("feelings"),
-  finale: () => goTo("finale"),
+  finale: completeExperience,
   annoy: annoyMascot,
   restart: () => {
     annoyCount = 0;
     document.getElementById("annoyReaction").textContent = "";
-    document.getElementById("annoyReaction").classList.remove("is-achievement");
+    document.getElementById("annoyReaction").classList.remove("is-achievement", "is-surrender");
     document.getElementById("finalMascot").dataset.expression = "happy";
     goTo("discovery");
   }
