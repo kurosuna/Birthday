@@ -65,7 +65,9 @@ function beginExperience() {
     sessionStarted = true;
   }
 
-  toggleAudio(true);
+  if (document.getElementById("audioToggle").getAttribute("aria-pressed") === "true") {
+    toggleAudio(true);
+  }
   if (!returningVisitor) {
     goTo("scan");
     return;
