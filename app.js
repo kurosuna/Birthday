@@ -207,12 +207,12 @@ function runBirthdayReveal() {
     app.classList.add("is-impact");
     burstConfetti();
     audioEngine?.celebrate();
-  }, 850);
+  }, 220);
   setTimeout(() => {
     boom.classList.remove("is-flashing", "is-boom");
     boom.hidden = true;
     app.classList.remove("is-impact");
-  }, 2400);
+  }, 1550);
 }
 
 function burstConfetti() {
@@ -243,17 +243,17 @@ function burstConfetti() {
 
 class TinySoundtrack {
   constructor() { this.context = null; this.master = null; this.timer = null; this.step = 0; }
-  start() {
+  async start() {
     if (!this.context) {
       this.context = new (window.AudioContext || window.webkitAudioContext)();
-      this.master = this.context.createGain(); this.master.gain.value = .055; this.master.connect(this.context.destination);
+      this.master = this.context.createGain(); this.master.gain.value = .1; this.master.connect(this.context.destination);
     }
-    this.context.resume();
+    if (this.context.state === "suspended") await this.context.resume();
     if (this.timer) return;
     const notes = [261.63, 329.63, 392, 523.25, 392, 329.63, 293.66, 392];
     const play = () => {
       const osc = this.context.createOscillator(); const gain = this.context.createGain();
-      osc.type = "sine"; osc.frequency.value = notes[this.step++ % notes.length];
+      osc.type = "triangle"; osc.frequency.value = notes[this.step++ % notes.length];
       gain.gain.setValueAtTime(0, this.context.currentTime);
       gain.gain.linearRampToValueAtTime(1, this.context.currentTime + .025);
       gain.gain.exponentialRampToValueAtTime(.001, this.context.currentTime + .55);
@@ -285,10 +285,18 @@ function toggleAudio(forceOn = null) {
   try {
     if (turnOn && !(window.AudioContext || window.webkitAudioContext)) throw new Error("Web Audio is unavailable");
     audioEngine ||= new TinySoundtrack();
-    if (turnOn) audioEngine.start(); else audioEngine.stop();
+    const startRequest = turnOn ? audioEngine.start() : (audioEngine.stop(), null);
     button.setAttribute("aria-pressed", String(turnOn));
     button.setAttribute("aria-label", turnOn ? "Turn music off" : "Turn music on");
     button.querySelector(".audio-label").textContent = turnOn ? "sound on" : "sound off";
+    if (startRequest) {
+      startRequest.catch((error) => {
+        button.setAttribute("aria-pressed", "false");
+        button.setAttribute("aria-label", "Sound unavailable");
+        button.querySelector(".audio-label").textContent = "sound unavailable";
+        console.warn("Sound could not start; continuing silently:", error);
+      });
+    }
   } catch (error) {
     button.setAttribute("aria-pressed", "false");
     button.setAttribute("aria-label", "Sound unavailable");
