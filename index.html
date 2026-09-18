@@ -1,0 +1,213 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#fff7ed" />
+    <meta name="description" content="A tiny secret thing." />
+    <title>tap.</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Gaegu:wght@400;700&family=Nunito:wght@600;700;800;900&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="style.css" />
+  </head>
+  <body>
+    <div class="noise" aria-hidden="true"></div>
+    <canvas id="confetti" aria-hidden="true"></canvas>
+
+    <main id="app" class="app" aria-live="polite">
+      <section class="scene scene--active" data-scene="discovery">
+        <div class="chapter">tiny world · 001</div>
+        <div class="mascot-wrap floaty">
+          <div class="mascot" data-expression="normal" aria-label="A small round mascot">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span>
+            <span class="blush blush--left"></span><span class="blush blush--right"></span>
+            <span class="mouth"></span><span class="arm arm--left"></span><span class="arm arm--right"></span>
+          </div>
+          <span class="floor-shadow"></span>
+        </div>
+        <div class="speech speech--center">
+          <p class="type-line">...</p>
+          <p class="type-line delay-1">oh?</p>
+          <p class="type-line delay-2">someone is here.</p>
+        </div>
+        <button class="button button--primary delay-in" data-action="begin">poke</button>
+        <p class="microcopy delay-in">(gently, please)</p>
+      </section>
+
+      <section class="scene" data-scene="scan">
+        <div class="scanline" aria-hidden="true"></div>
+        <div class="mascot-wrap mascot-wrap--close">
+          <div class="mascot mascot--close" data-expression="serious" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span>
+            <span class="blush blush--left"></span><span class="blush blush--right"></span><span class="mouth"></span>
+          </div>
+        </div>
+        <div class="scanner-card sticker">
+          <div class="label"><span class="blink-dot"></span> identity check</div>
+          <dl class="check-list">
+            <div><dt>Name</dt><dd data-field="name">Irenne</dd><b>✓</b></div>
+            <div><dt>Birthday</dt><dd>TODAY</dd><b>✓</b></div>
+            <div><dt>Age</dt><dd data-field="age">classified 🔒</dd></div>
+            <div><dt>Mood</dt><dd>Unpredictable</dd></div>
+            <div><dt>Stability</dt><dd>questionable</dd></div>
+          </dl>
+        </div>
+        <button class="button button--primary" data-action="scan-complete">continue inspection</button>
+      </section>
+
+      <section class="scene scene--warning" data-scene="warning">
+        <div class="warning-tape">WARNING · WARNING · WARNING ·</div>
+        <div class="mascot-wrap shake">
+          <div class="mascot" data-expression="shock" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span><span class="mouth"></span>
+            <span class="arm arm--left"></span><span class="arm arm--right"></span>
+          </div>
+        </div>
+        <div class="speech speech--warning">
+          <span>⚠</span>
+          <p><b>IRENNE HAS GAINED<br />ANOTHER LEVEL.</b></p>
+        </div>
+        <p class="big-yell">WAAAAAA—</p>
+        <button class="button button--dark" data-action="protocol">fix this</button>
+      </section>
+
+      <section class="scene scene--protocol" data-scene="protocol">
+        <div class="chapter">emergency birthday protocol</div>
+        <div class="mascot-wrap mascot-wrap--small busy">
+          <div class="mascot" data-expression="serious" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span><span class="mouth"></span>
+            <span class="arm arm--left"></span><span class="arm arm--right"></span>
+          </div>
+          <span class="speed speed--1"></span><span class="speed speed--2"></span>
+        </div>
+        <div class="terminal sticker">
+          <p id="loadingText">Initiating birthday protocol...</p>
+          <div class="progress-track"><span id="progressBar"></span></div>
+          <div class="progress-meta"><span>cake.exe</span><b id="progressNumber">0%</b></div>
+        </div>
+        <div id="stuckArea" class="stuck" hidden>
+          <p>...</p><p>why did it stop</p>
+          <button class="button button--primary" data-action="unstick">poke the machine</button>
+        </div>
+      </section>
+
+      <section class="scene scene--wake" data-scene="wake">
+        <div class="chapter">birthday emergency · step 2</div>
+        <div class="wake-card sticker">
+          <p class="wake-alert"><span></span> URGENT SITUATION</p>
+          <h2>Irenne fell asleep.</h2>
+          <p id="wakeInstruction">Tap her 6 times before she misses the cake.</p>
+        </div>
+        <button class="sleepy-irenne" id="sleepyIrenne" data-action="wake-irenne" aria-label="Wake Irenne up">
+          <span class="zzz zzz--one">z</span><span class="zzz zzz--two">z</span><span class="zzz zzz--three">z</span>
+          <span class="curly-head">
+            <span class="curl curl--1"></span><span class="curl curl--2"></span><span class="curl curl--3"></span>
+            <span class="curl curl--4"></span><span class="curl curl--5"></span><span class="curl curl--6"></span>
+            <span class="irenne-face"><i class="irenne-eye irenne-eye--left"></i><i class="irenne-eye irenne-eye--right"></i><i class="irenne-mouth"></i></span>
+          </span>
+          <span class="irenne-body"><i class="blanket-dots"></i></span>
+          <span class="pillow"></span>
+        </button>
+        <div class="wake-progress" aria-label="Wake-up progress">
+          <span></span><span></span><span></span><span></span><span></span><span></span>
+        </div>
+        <div class="wake-dialogue" id="wakeDialogue">five more minutes...</div>
+        <p class="microcopy">tap the sleepy birthday girl</p>
+      </section>
+
+      <section class="scene scene--party" data-scene="reveal">
+        <div class="party-rays" aria-hidden="true"></div>
+        <div class="cake" aria-hidden="true"><span class="candle"><i></i></span><span class="icing"></span></div>
+        <p class="eyebrow">PROTOCOL SUCCESSFUL</p>
+        <h1>HAPPY<br /><span>BIRTHDAY</span><br /><em data-field="name">IRENNE!!</em></h1>
+        <div class="mascot-wrap mascot-wrap--party jump">
+          <div class="mascot" data-expression="happy" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span>
+            <span class="blush blush--left"></span><span class="blush blush--right"></span><span class="mouth"></span>
+            <span class="arm arm--left"></span><span class="arm arm--right"></span>
+          </div>
+        </div>
+        <button class="button button--white" data-action="patches">what just happened</button>
+      </section>
+
+      <section class="scene scene--notes" data-scene="patches">
+        <div class="chapter">official documentation</div>
+        <article class="patch-card sticker">
+          <div class="tape tape--top"></div>
+          <header><span>NEW!</span><h2>IRENNE <b data-field="version">v??.0</b></h2><p>release notes</p></header>
+          <ul id="patchList" class="patch-list"></ul>
+          <div class="known-issues"><b>KNOWN ISSUES</b><p id="issueList"></p></div>
+          <footer>system status: somehow operational <b>✓</b></footer>
+        </article>
+        <button class="button button--primary" data-action="letter">there's one more thing</button>
+      </section>
+
+      <section class="scene scene--letter" data-scene="letter">
+        <div class="stars" aria-hidden="true">✦　·　✧　·　✦</div>
+        <div class="mascot-wrap mascot-wrap--small">
+          <div class="mascot" data-expression="soft" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span><span class="blush blush--left"></span><span class="blush blush--right"></span><span class="mouth"></span>
+          </div>
+        </div>
+        <div class="speech speech--center speech--quiet"><p>...</p><p>okay.</p><p>I was told to give you something.</p></div>
+        <button class="envelope" data-action="open-letter" aria-label="Open the letter">
+          <span class="envelope-back"></span><span class="envelope-paper">for Irenne ♡</span><span class="envelope-front"></span><span class="envelope-flap"></span>
+        </button>
+        <p class="microcopy">tap to open</p>
+      </section>
+
+      <section class="scene scene--message" data-scene="message">
+        <article class="letter-paper">
+          <div class="letter-stamp">🐮</div>
+          <p class="letter-to">Dear Irenne,</p>
+          <div id="personalMessage"></div>
+          <p class="letter-sign" id="letterSign"></p>
+        </article>
+        <button class="button button--quiet" data-action="feelings">fold the letter</button>
+      </section>
+
+      <section class="scene scene--feelings" data-scene="feelings">
+        <div class="mascot-wrap impatient">
+          <span class="annoy-mark" aria-hidden="true">⌁</span>
+          <div class="mascot" data-expression="annoyed" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="brow brow--left"></span><span class="brow brow--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span><span class="mouth"></span>
+            <span class="arm arm--left"></span><span class="arm arm--right"></span>
+          </div>
+        </div>
+        <div class="speech speech--center"><p>...</p><p>why are you still reading?</p><p>go celebrate or something.</p></div>
+        <button class="button button--primary" data-action="finale">fine, fine</button>
+      </section>
+
+      <section class="scene scene--finale" data-scene="finale">
+        <div class="chapter">end of tiny world</div>
+        <div class="final-illustration">
+          <div class="mascot mascot--sitting" id="finalMascot" data-expression="happy" aria-hidden="true">
+            <span class="ear ear--left"></span><span class="ear ear--right"></span>
+            <span class="eye eye--left"></span><span class="eye eye--right"></span><span class="blush blush--left"></span><span class="blush blush--right"></span><span class="mouth"></span>
+          </div>
+          <div class="mini-cake">🎂</div>
+        </div>
+        <div class="speech speech--center final-copy"><p>Anyway...</p><p><b>mission accomplished.</b></p><p>Happy Birthday, Irenne.<br />Please continue existing.</p></div>
+        <div class="complete-stamp">BIRTHDAY PROTOCOL: COMPLETE ✓</div>
+        <p class="event-date" data-field="date">A tiny event · 2026</p>
+        <button class="button button--outline" data-action="annoy">annoy the mascot</button>
+        <p id="annoyReaction" class="annoy-reaction" aria-live="assertive"></p>
+        <button class="restart" data-action="restart">↻ experience again</button>
+      </section>
+    </main>
+
+    <button id="audioToggle" class="audio-toggle" aria-label="Turn music on" aria-pressed="false">
+      <span class="audio-icon">♪</span><span class="audio-label">sound off</span>
+    </button>
+    <script src="app.js"></script>
+  </body>
+</html>
