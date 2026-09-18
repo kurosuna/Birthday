@@ -196,6 +196,7 @@ function wakeIrenne() {
 
 function runBirthdayReveal() {
   const boom = document.getElementById("revealBoom");
+  boom.hidden = false;
   boom.classList.remove("is-boom");
   boom.classList.add("is-flashing");
   setTimeout(() => {
@@ -209,6 +210,7 @@ function runBirthdayReveal() {
   }, 850);
   setTimeout(() => {
     boom.classList.remove("is-flashing", "is-boom");
+    boom.hidden = true;
     app.classList.remove("is-impact");
   }, 2400);
 }
