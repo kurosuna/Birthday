@@ -184,12 +184,23 @@ function toggleAudio(forceOn = null) {
 }
 
 function annoyMascot() {
-  const reactions = ["hey.", "STOP POKING ME", "I SAID STOP", "seriously?", "(╬ •̀皿•́)", "I am filing a complaint.", "...okay, one more.", "happy birthday anyway ♡"];
-  document.getElementById("annoyReaction").textContent = reactions[Math.min(annoyCount, reactions.length - 1)];
-  const mascot = document.getElementById("finalMascot");
-  mascot.dataset.expression = annoyCount > 1 ? "serious" : "shock";
-  mascot.parentElement.classList.remove("shake"); void mascot.offsetWidth; mascot.parentElement.classList.add("shake");
+  const reactions = {
+    1: "hey.",
+    2: "stop.",
+    3: "Irenne.",
+    4: "I'M SERIOUS.",
+    5: "(╬ •̀皿•́)",
+    10: "WHY ARE YOU LIKE THIS",
+    20: "Achievement unlocked:\n✨ Professional Annoyance ✨"
+  };
   annoyCount++;
+  const reaction = document.getElementById("annoyReaction");
+  if (reactions[annoyCount]) reaction.textContent = reactions[annoyCount];
+  reaction.classList.toggle("is-achievement", annoyCount >= 20);
+  const mascot = document.getElementById("finalMascot");
+  mascot.dataset.expression = annoyCount >= 4 ? "serious" : "shock";
+  mascot.parentElement.classList.remove("shake"); void mascot.offsetWidth; mascot.parentElement.classList.add("shake");
+  if (annoyCount === 20) burstConfetti();
 }
 
 const actions = {
@@ -208,7 +219,13 @@ const actions = {
   feelings: () => goTo("feelings"),
   finale: () => goTo("finale"),
   annoy: annoyMascot,
-  restart: () => { annoyCount = 0; goTo("discovery"); }
+  restart: () => {
+    annoyCount = 0;
+    document.getElementById("annoyReaction").textContent = "";
+    document.getElementById("annoyReaction").classList.remove("is-achievement");
+    document.getElementById("finalMascot").dataset.expression = "happy";
+    goTo("discovery");
+  }
 };
 
 app.addEventListener("click", (event) => {

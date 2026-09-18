@@ -195,7 +195,8 @@ button { font: inherit; color: inherit; -webkit-tap-highlight-color: transparent
 .final-copy { font-size: 1.05rem; padding: 10px 19px; }
 .complete-stamp { border: 2px solid #52a87b; color: #38845d; padding: 6px 10px; font-size: .62rem; font-weight: 900; letter-spacing: .08em; transform: rotate(-1deg); }
 .event-date { font: 700 .8rem "Gaegu"; opacity: .6; }
-.annoy-reaction { height: 20px; margin: -3px 0; font: 700 1rem "Gaegu"; color: #d04f72; }
+.annoy-reaction { min-height: 20px; margin: -3px 0; font: 700 1rem/1.15 "Gaegu"; color: #d04f72; white-space: pre-line; transition: transform .2s, color .2s; }
+.annoy-reaction.is-achievement { color: #8a5b00; background: var(--yellow); border: 2px solid var(--ink); border-radius: 10px; padding: 7px 13px; box-shadow: 3px 4px 0 rgba(61,53,64,.14); transform: rotate(-1deg) scale(1.03); }
 .restart { border: 0; background: transparent; text-decoration: underline; opacity: .5; font-size: .68rem; cursor: pointer; }
 
 .audio-toggle { position: fixed; z-index: 40; top: max(13px, env(safe-area-inset-top)); right: 13px; border: 2px solid var(--ink); background: rgba(255,255,255,.88); backdrop-filter: blur(6px); height: 34px; padding: 0 10px; border-radius: 999px; display: flex; align-items: center; gap: 5px; cursor: pointer; box-shadow: 0 3px 0 var(--ink); font-size: .62rem; font-weight: 900; }
